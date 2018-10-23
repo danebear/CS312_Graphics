@@ -220,8 +220,8 @@ int main()
         // Refresh Screen
         ClearScreen(framePtr);
 
-		// Call DrawPrimitive here or access framePtr directly
-		// Your code goes here
+	// Call DrawPrimitive here or access framePtr directly
+	framePtr[10][10] = 0xffff0000;
 		
         // Ensure framerate at 60fps, push to screen
         SDL_Delay(17);	  
