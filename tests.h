@@ -3,15 +3,6 @@
 #ifndef TESTS_H
 #define TESTS_H
 
-void DrawPrimitive(PRIMITIVES type, 
-                    Vertex inputVerts[], 
-                    Attributes inputAttrs[],
-                    int numIn, 
-                    POINTER_2D(framePtr), 
-                    Transform * transFormMatrix = NULL, 
-                    VIEW_MATRICES view_m = PERSPECTIVE);
-
-
 /********************************************
  * Demonstrate Line Drawing for Project 01. 
  *******************************************/
