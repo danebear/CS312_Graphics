@@ -68,7 +68,7 @@ struct Transform
  *****************************************************/
 void DrawPoint(POINTER_2D(framePtr), Vertex* v, Attributes* attrs, int count);
 void DrawLine(POINTER_2D(framePtr), Vertex* line, Attributes* attrs, int count);
-void DrawClippedTriangle(POINTER_2D(framePtr), Vertex* triangle, Attributes* attrs, int count)
+void DrawClippedTriangle(POINTER_2D(framePtr), Vertex* triangle, Attributes* attrs, int count);
 void DrawPrimitive(PRIMITIVES type, 
                     Vertex inputVerts[], 
                     Attributes inputAttrs[],
