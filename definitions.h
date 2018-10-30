@@ -62,4 +62,20 @@ struct Transform
     // Your code goes here
 };
 
+
+/******************************************************
+ * Primitive prototypes.
+ *****************************************************/
+void DrawPoint(POINTER_2D(framePtr), Vertex* v, Attributes* attrs, int count);
+void DrawLine(POINTER_2D(framePtr), Vertex* line, Attributes* attrs, int count);
+void DrawClippedTriangle(POINTER_2D(framePtr), Vertex* triangle, Attributes* attrs, int count)
+void DrawPrimitive(PRIMITIVES type, 
+                    Vertex inputVerts[], 
+                    Attributes inputAttrs[],
+                    int numIn, 
+                    POINTER_2D(framePtr), 
+                    Transform * transFormMatrix = NULL, 
+                    VIEW_MATRICES view_m = PERSPECTIVE);
+
+
 #endif
