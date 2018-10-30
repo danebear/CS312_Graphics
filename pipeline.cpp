@@ -67,8 +67,7 @@ void DrawPoint(POINTER_2D(framePtr), Vertex* v, Attributes* attrs, int count)
 {
     if(count == 0) return;
 
-    // Set our pixel according to the attribute value!
-    framePtr[v->y][v->x] = attrs->color;
+    // Your code goes here
 }
 
 
