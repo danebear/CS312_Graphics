@@ -1,5 +1,9 @@
 #include "definitions.h"
 #include "tests.h"
+#include "math.h"
+
+// Function proto types
+void DrawPoint(POINTER_2D(framePtr), Vertex* v, Attributes* attrs, int count);
 
 /************************************************************
  * UPDATE_SCREEN:
@@ -53,10 +57,6 @@ void DrawClippedTriangle(POINTER_2D(framePtr), Vertex* triangle, Attributes* att
  ***************************************/
 void DrawLine(POINTER_2D(framePtr), Vertex* line, Attributes* attrs, int count)
 {
-    // Error check
-    if(count != 2) return;
-	
-	// Your code goes here
 }
 
 /****************************************
@@ -218,11 +218,18 @@ int main()
         PollUserInputs(running);
 
         // Refresh Screen
-        ClearScreen(framePtr);
+        //ClearScreen(framePtr);
 
 		// Call DrawPrimitive here or access framePtr directly
 		// Your code goes here
-		
+ //       DrawLineTest(framePtr);
+       Vertex v[1];
+       Attributes a[1];
+       v[0].x = 10;
+       v[0].y = 10;
+       a[0].color = 0xffff0000;
+       DrawPrimitive(POINT, v, a, 1, framePtr);
+
         // Ensure framerate at 60fps, push to screen
         SDL_Delay(17);	  
         SendFrame(GPU_OUTPUT, REN, FRAME_BUF);
