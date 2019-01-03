@@ -1,9 +1,27 @@
 #include "definitions.h"
-#include "tests.h"
+#include "coursefunctions.h"
+#include "coursesolutions.h"
+
+/***********************************************
+ * CLEAR_SCREEN
+ * Sets the screen to the indicated color value.
+ **********************************************/
+void clearScreen(Buffer2D<PIXEL> & frame, PIXEL color = 0xff000000)
+{
+    int h = frame.height();
+    int w = frame.width();
+    for(int y = 0; y < h; y++)
+    {
+        for(int x = 0; x < w; x++)
+        {
+            frame[y][x] = color;
+        }
+    }
+}
 
 /************************************************************
- * UPDATE_SCREEN:
- * Blits pixels from RAM to VRAM for rendering
+ * UPDATE_SCREEN
+ * Blits pixels from RAM to VRAM for rendering.
  ***********************************************************/
 void SendFrame(SDL_Texture* GPU_OUTPUT, SDL_Renderer * ren, SDL_Surface* frameBuf) 
 {
@@ -14,13 +32,15 @@ void SendFrame(SDL_Texture* GPU_OUTPUT, SDL_Renderer * ren, SDL_Surface* frameBu
 }
 
 /*************************************************************
- * POLL_CONTROLS:
+ * POLL_CONTROLS
  * Updates the state of the application based on:
- * keyboard, mouse, touch screen, gamepad inputs 
+ * keyboard, mouse, touch screen, gamepad inputs. 
  ************************************************************/
-void PollUserInputs(bool & playing)
+void processUserInputs(bool & playing)
 {
     SDL_Event e;
+    int mouseX;
+    int mouseY;
     while(SDL_PollEvent(&e)) 
     {
         if(e.type == SDL_QUIT) 
@@ -31,159 +51,189 @@ void PollUserInputs(bool & playing)
         {
             playing = false;
         }
+
+        // Camera Rotation
+        if(e.type == SDL_MOUSEMOTION)
+        {
+            int cur = SDL_ShowCursor(SDL_QUERY);
+            if(cur == SDL_DISABLE)
+            {
+                mouseX = e.motion.xrel;
+                mouseY = e.motion.yrel;
+                camYaw   -= (mouseX * CAM_INCREMENT);
+                camPitch -= (mouseY * CAM_INCREMENT);
+            }
+        }
+
+        // Hide-Show mouse
+        if(e.type == SDL_MOUSEBUTTONDOWN)
+        {
+            int cur = SDL_ShowCursor(SDL_QUERY);
+            if(cur == SDL_DISABLE)
+            {
+                SDL_ShowCursor(SDL_ENABLE);
+                SDL_SetRelativeMouseMode(SDL_FALSE);
+            }
+            else
+            {
+                SDL_ShowCursor(SDL_DISABLE);
+                SDL_SetRelativeMouseMode(SDL_TRUE);
+            }
+        }
+
+        // Camera Translation
+        if(e.key.keysym.sym == 'w' && e.type == SDL_KEYDOWN)
+        {
+            camZ += (cos((camYaw / 180.0) * M_PI)) * STEP_INCREMENT;
+            camX -= (sin((camYaw / 180.0) * M_PI)) * STEP_INCREMENT;
+        }
+        if(e.key.keysym.sym == 's' && e.type == SDL_KEYDOWN)
+        {
+            camZ -= (cos((camYaw / 180.0) * M_PI)) * STEP_INCREMENT;
+            camX += (sin((camYaw / 180.0) * M_PI)) * STEP_INCREMENT;
+        }
+        if(e.key.keysym.sym == 'a' && e.type == SDL_KEYDOWN)
+        {
+            camX -= (cos((camYaw / 180.0) * M_PI)) * STEP_INCREMENT;
+            camZ -= (sin((camYaw / 180.0) * M_PI)) * STEP_INCREMENT;
+        }
+        if(e.key.keysym.sym == 'd' && e.type == SDL_KEYDOWN)
+        {
+            camX += (cos((camYaw / 180.0) * M_PI)) * STEP_INCREMENT;
+            camZ += (sin((camYaw / 180.0) * M_PI)) * STEP_INCREMENT;
+        }
     }
 }
 
+
 /****************************************
- * Renders a triangle/convex polygon
- * to the screen with the appropriate 
- * fill pattern
+ * DRAW_POINT
+ * Renders a point to the screen with the
+ * appropriate coloring
  ***************************************/
-void DrawClippedTriangle(POINTER_2D(framePtr), Vertex* triangle, Attributes* attrs, int count)
+void DrawPoint(Buffer2D<PIXEL> & frame, Vertex* v, VBO* attrs, VBO * const uniforms, FragmentShader* const frag)
 {
-    // Error check
-    if(count < 3) return;
-	
-	// Your code goes here
+    // Your code goes here
 }
 
 /****************************************
  * Renders a line to the screen with the
  * appropriate coloring
  ***************************************/
-void DrawLine(POINTER_2D(framePtr), Vertex* line, Attributes* attrs, int count)
+void DrawLine(Buffer2D<PIXEL> & frame, Vertex* line, VBO* attrs, VBO* const uniforms, FragmentShader* const frag)
 {
-    // Error check
-    if(count != 2) return;
-	
-	// Your code goes here
-}
-
-/****************************************
- * Renders a point to the screen with the
- * appropriate coloring
- ***************************************/
-void DrawPoint(POINTER_2D(framePtr), Vertex* v, Attributes* attrs, int count)
-{
-    if(count == 0) return;
-
     // Your code goes here
 }
 
-
 /*************************************************************
- * TRANSFORM_VERTICES:
- * Where rotations, translations, scaling operations
- * transform the input vertices. NOTE: This does not 
- * include the camera view transform.
+ * DRAW_TRIANGLE
+ * Renders a triangle to the target buffer. Essential 
+ * building block for most of drawing.
  ************************************************************/
-void TransformVertices( Vertex inputVerts[], Attributes inputAttrs[], int numInput, 
-                        Vertex transVerts[], Attributes transAttrs[], int & numTrans, 
-                        Transform* trans)
+void DrawTriangle(Buffer2D<PIXEL> & target, Vertex* triangle, VBO* attrs, VBO* const uniforms, FragmentShader* const frag)
 {
-    // Dummy code - your code will replace this
-    for(numTrans = 0; numTrans < numInput; numTrans++)
-    {
-        transVerts[numTrans] = inputVerts[numTrans];
-        transAttrs[numTrans] = inputAttrs[numTrans];
-    }
+    // Your code goes here
 }
 
-/*************************************************************
- * CLIP_VERTICES:
- * Depending on our view type - clip to the frustrum that 
- * maps to our screen's aspect ratio.  
- ************************************************************/
-void ClipVertices(Vertex transVerts[], Attributes transAttrs[], int numTrans, 
-                  Vertex clippedVerts[], Attributes clippedAttrs[], int & numClipped, 
-                  VIEW_MATRICES view)
+/**************************************************************
+ * VERTEX_SHADER_EXECUTE_VERTICES
+ * Executes the vertex shader on inputs, yielding transformed
+ * outputs. 
+ *************************************************************/
+void VertexShaderExecuteVertices(const VertexShader* vert, Vertex const inputVerts[], VBO const inputAttrs[], const int& numIn, 
+                                 VBO* const uniforms, Vertex transformedVerts[], VBO transformedAttrs[])
 {
-    // Dummy code - your code will replace this
-    for(numClipped = 0; numClipped < numTrans; numClipped++)
+    // Defaults to pass-through behavior
+    if(vert == NULL)
     {
-        clippedVerts[numClipped] = transVerts[numClipped];
-        clippedAttrs[numClipped] = transAttrs[numClipped];
+        for(int i = 0; i < numIn; i++)
+        {
+            transformedVerts[i] = inputVerts[i];
+        }
     }
-}
-
-/*************************************************************
- * VIEW_TRANSFORM_VERTICES:
- * Converts our clipped geometry to screen space. 
- * This usually means using PERSPECTIVE or ORTHOGRAPHIC 
- * views.
- ************************************************************/
-void ViewTransformVertices( Vertex clippedVerts[], Attributes clippedAttrs[], int numClipped, 
-                            Vertex viewVerts[], Attributes viewAttrs[], int & numView, 
-                            VIEW_MATRICES view)
-{
-    // Dummy code - your code will replace this
-    for(numView = 0; numView < numClipped; numView++)
+    else
     {
-        viewVerts[numView] = clippedVerts[numView];
-        viewAttrs[numView] = clippedAttrs[numView];
+        // Your Vertex Shader Callback goes here
     }
 }
 
 /***************************************************************************
- * Processes the indiecated PRIMITIVES type through stages of:
- *  1) Transformation
+ * DRAW_PRIMITIVE
+ * Processes the indiecated PRIMITIVES type through pipeline stages of:
+ *  1) Vertex Transformation
  *  2) Clipping
- *  3) Perspective or Orthographic projection
- *  4) Vertex Interpolation
- *  5) Fragment Shading
+ *  3) Normalization
+ *  4) ViewPort transform
+ *  5) Rasterization & Fragment Shading
  **************************************************************************/
-void DrawPrimitive(PRIMITIVES type, 
-                    Vertex inputVerts[], 
-                    Attributes inputAttrs[],
-                    int numIn, 
-                    POINTER_2D(framePtr), 
-                    Transform * transFormMatrix, // Default parameter available
-                    VIEW_MATRICES view_m)        // Default parameter available
+void DrawPrimitive(PRIMITIVES prim, 
+                   Buffer2D<PIXEL>& target,
+                   const Vertex inputVerts[], 
+                   const VBO inputAttrs[],
+                   VBO* const uniforms,
+                   FragmentShader* const frag,                   
+                   VertexShader* const vert,
+                   Buffer2D<double>* zBuf)
 {
-    // Matrix Transformations
-    Vertex transVerts[MAX_VERTICES];
-    Attributes transAttrs[MAX_VERTICES];
-    int numTrans;    
-    TransformVertices(inputVerts, inputAttrs, numIn, transVerts, transAttrs, numTrans, transFormMatrix); 
+    // Setup count for vertices & attributes
+    int numIn = 0;
+    switch(prim)
+    {
+        case POINT:
+            numIn = 1;
+            break;
+        case LINE:
+            numIn = 2;
+            break;
+        case TRIANGLE:
+            numIn = 3;
+            break;
+    }
+
+    // Vertex shader 
+    Vertex transformedVerts[MAX_VERTICES];
+    VBO transformedAttrs[MAX_VERTICES];
+    VertexShaderExecuteVertices(vert, inputVerts, inputAttrs, numIn, uniforms, transformedVerts, transformedAttrs);
+
+    // After implementing the projection transform, uncomment the functions:
+    //      1) 'ClipVertices(...)'
+    //      2) 'NormalizeVertices(...)'
+    //      3) 'ViewTransformVertices(...)'
+    // And remove the loop code tagged as 'Bypass loop'
 
     // Clip to our frustrum
     Vertex clippedVerts[MAX_VERTICES];
-    Attributes clippedAttrs[MAX_VERTICES];
+    VBO clippedAttrs[MAX_VERTICES];
     int numClipped; 
-    ClipVertices(transVerts, transAttrs, numTrans, clippedVerts, clippedAttrs, numClipped, view_m);
+    //ClipVertices(transformedVerts, transformedAttrs, numIn, clippedVerts, clippedAttrs, numClipped);
 
-    // View space transform
+    // Normalization
+    //NormalizeVertices(clippedVerts, numClipped);
+
+    // View Transform
     Vertex viewVerts[MAX_VERTICES];
-    Attributes viewAttrs[MAX_VERTICES];
+    VBO viewAttrs[MAX_VERTICES];
     int numView;
-    ViewTransformVertices(clippedVerts, clippedAttrs, numClipped, viewVerts, viewAttrs, numView, view_m);
+    //ViewTransformVertices(target, clippedVerts, clippedAttrs, numClipped, viewVerts, viewAttrs, numView);
+
+    // 'Bypass loop' (used while we don't have clipping, view transform enabled)
+    for(numView = 0; numView < numIn; numView++)
+    {
+        viewVerts[numView] = transformedVerts[numView];
+        viewAttrs[numView] = transformedAttrs[numView];
+    }
 
     // Vertex Interpolation & Fragment Drawing
-    switch(type)
+    switch(prim)
     {
         case POINT:
-            DrawPoint(framePtr, viewVerts, viewAttrs, numView);
+            DrawPoint(target, viewVerts, viewAttrs, uniforms, frag);
             break;
         case LINE:
-            DrawLine(framePtr, viewVerts, viewAttrs, numView);
+            DrawLine(target, viewVerts, viewAttrs, uniforms, frag);
             break;
         case TRIANGLE:
-            DrawClippedTriangle(framePtr, viewVerts, viewAttrs, numView);
-            break;
-    }
-}
-
-/***********************************************
- * Sets the screen to the indicated color value.
- **********************************************/
-void ClearScreen(POINTER_2D(framePtr), COLOR color = 0xff000000)
-{
-    for(int y = 0; y < S_HEIGHT; y++)
-    {
-        for(int x = 0; x < S_WIDTH; x++)
-        {
-            framePtr[y][x] = color;
-        }
+            DrawTriangle(target, viewVerts, viewAttrs, uniforms, frag);
     }
 }
 
@@ -194,36 +244,33 @@ void ClearScreen(POINTER_2D(framePtr), COLOR color = 0xff000000)
 int main()
 {
     // -----------------------DATA TYPES----------------------
-    SDL_Window* WIN;                // Our Window
-    SDL_Renderer* REN;              // Interfaces CPU with GPU
-    SDL_Texture * GPU_OUTPUT;       // GPU buffer image (GPU Memory)
-    SDL_Surface* FRAME_BUF;         // CPU buffer image (Main Memory) 
-    POINTER_2D(framePtr);           // Assists with setting pixels in FRAME_BUF
+    SDL_Window* WIN;               // Our Window
+    SDL_Renderer* REN;             // Interfaces CPU with GPU
+    SDL_Texture* GPU_OUTPUT;       // GPU buffer image (GPU Memory)
+    SDL_Surface* FRAME_BUF;        // CPU buffer image (Main Memory) 
 
     // ------------------------INITIALIZATION-------------------
     SDL_Init(SDL_INIT_EVERYTHING);
-    WIN = SDL_CreateWindow(GAME_NAME, 200, 200, S_WIDTH, S_HEIGHT, 0);
+    WIN = SDL_CreateWindow(WINDOW_NAME, 200, 200, S_WIDTH, S_HEIGHT, 0);
     REN = SDL_CreateRenderer(WIN, -1, SDL_RENDERER_SOFTWARE);
     FRAME_BUF = SDL_CreateRGBSurface(0, S_WIDTH, S_HEIGHT, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
     FRAME_BUF = SDL_ConvertSurface(SDL_GetWindowSurface(WIN), SDL_GetWindowSurface(WIN)->format, 0);
     GPU_OUTPUT = SDL_CreateTextureFromSurface(REN, FRAME_BUF);
-    framePtr = SETUP_POINTER_2D(FRAME_BUF);
+    BufferImage frame(FRAME_BUF);
 
     // Draw loop 
     bool running = true;
     while(running) 
     {           
-        // Poll for user inputs
-        PollUserInputs(running);
+        // Handle user inputs
+        processUserInputs(running);
 
         // Refresh Screen
-        ClearScreen(framePtr);
+        clearScreen(frame);
 
-		// Call DrawPrimitive here or access framePtr directly
-		// Your code goes here
-		
-        // Ensure framerate at 60fps, push to screen
-        SDL_Delay(17);	  
+        SOL_TestDrawPixel(frame);
+
+        // Push to the GPU
         SendFrame(GPU_OUTPUT, REN, FRAME_BUF);
     }
 
